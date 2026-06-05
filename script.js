@@ -4,6 +4,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 let pdfDoc = null;
 let pdfBytes = null;
 let currentPage = 1;
+let pdfFile = null;
 
 const pdfInput = document.getElementById("pdfInput");
 
@@ -16,7 +17,11 @@ const previewCtx = previewCanvas.getContext("2d");
 const pageInfo = document.getElementById("pageInfo");
 const statusBox = document.getElementById("status");
 
+const splitCheckbox = document.getElementById("splitPages");
+
 pdfInput.addEventListener("change", loadPdf);
+
+splitCheckbox.addEventListener("change", updateUI);
 
 document
     .getElementById("prevPage")
@@ -74,11 +79,11 @@ previewInputs.forEach(id => {
 
 async function loadPdf(event) {
 
-    const file = event.target.files[0];
+    pdfFile = event.target.files[0];
 
-    if (!file) return;
+    if (!pdfFile) return;
 
-    const rawBytes = await file.arrayBuffer();
+    const rawBytes = await pdfFile.arrayBuffer();
 
     pdfBytes = new Uint8Array(rawBytes);
 
@@ -345,6 +350,20 @@ async function exportPdf() {
 
     if (!pdfBytes) return;
 
+    const settings = getCropSettings();
+
+    const errors = validateSettings(settings);
+
+    if (errors.length > 0) {
+
+        alert(
+            "入力エラー:\n\n" +
+            errors.join("\n")
+        );
+
+        return;
+    }
+
     statusBox.textContent =
         "PDF生成中...";
 
@@ -353,8 +372,6 @@ async function exportPdf() {
 
     const outPdf =
         await PDFLib.PDFDocument.create();
-
-    const settings = getCropSettings();
 
     const pages = srcPdf.getPages();
 
@@ -400,23 +417,88 @@ async function exportPdf() {
 
     const bytes = await outPdf.save();
 
-    const blob = new Blob(
-        [bytes],
-        { type: "application/pdf" }
-    );
+    const suggestedName = pdfFile
+        ? pdfFile.name.replace(
+            /\.pdf$/i,
+            "_trimmed.pdf"
+        )
+        : "output.pdf";
 
-    const url =
-        URL.createObjectURL(blob);
+    if (window.showSaveFilePicker) {
 
-    const a =
-        document.createElement("a");
+        try {
 
-    a.href = url;
-    a.download = "trimmed.pdf";
-    a.click();
+            const handle =
+                await window.showSaveFilePicker({
 
-    URL.revokeObjectURL(url);
+                    suggestedName,
 
+                    types: [
+                        {
+                            description:
+                                "PDF Document",
+
+                            accept: {
+                                "application/pdf":
+                                    [".pdf"]
+                            }
+                        }
+                    ]
+                });
+
+            const writable =
+                await handle.createWritable();
+
+            await writable.write(
+                bytes
+            );
+
+            await writable.close();
+
+        } catch (err) {
+
+            if (
+                err.name ===
+                "AbortError"
+            ) {
+                return;
+            }
+
+            throw err;
+        }
+
+    } else {
+
+        const blob =
+            new Blob(
+                [pdfBytes],
+                {
+                    type:
+                        "application/pdf"
+                }
+            );
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+        const a =
+            document.createElement(
+                "a"
+            );
+
+        a.href = url;
+
+        a.download =
+            suggestedName;
+
+        a.click();
+
+        URL.revokeObjectURL(
+            url
+        );
+    }
     statusBox.textContent =
         "PDF生成完了";
 }
@@ -584,4 +666,88 @@ function syncUpperToLower() {
     document.getElementById(
         "upperBottom"
     ).value;
+}
+
+function updateUI() {
+
+    const split =
+        document.getElementById(
+            "splitPages"
+        ).checked;
+
+    document.getElementById(
+        "lowerSettings"
+    ).style.display =
+        split ? "block" : "none";
+}
+
+updateUI();
+
+function validateSettings(settings) {
+
+    const errors = [];
+
+    function validateCrop(name, crop) {
+
+        if (crop.left >= crop.right) {
+
+            errors.push(
+                `${name}: 左端は右端より小さくしてください`
+            );
+        }
+
+        if (crop.top >= crop.bottom) {
+
+            errors.push(
+                `${name}: 上端は下端より小さくしてください`
+            );
+        }
+
+        if (
+            crop.left < 0 ||
+            crop.right > 100 ||
+            crop.top < 0 ||
+            crop.bottom > 100
+        ) {
+
+            errors.push(
+                `${name}: 値は0～100の範囲で入力してください`
+            );
+        }
+
+        const width =
+            crop.right - crop.left;
+
+        const height =
+            crop.bottom - crop.top;
+
+        if (width < 1) {
+
+            errors.push(
+                `${name}: 横幅が小さすぎます`
+            );
+        }
+
+        if (height < 1) {
+
+            errors.push(
+                `${name}: 高さが小さすぎます`
+            );
+        }
+    }
+
+    validateCrop(
+        "上ページ",
+        settings.upper
+    );
+
+    if (settings.split) {
+
+        validateCrop(
+            "下ページ",
+            settings.lower
+        );
+    }
+
+    return errors;
 }

@@ -60,6 +60,13 @@ button {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.preview-panel {
+    flex: 1;
+    min-width: 350px;
+    max-width: 700px;
 }
 
 .preview-panel {
@@ -75,7 +82,8 @@ button {
 
 canvas {
     border: 1px solid #ccc;
-    max-width: 100%;
+    width: 100%;
+    height: auto;
 }
 
 .nav {
