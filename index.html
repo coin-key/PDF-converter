@@ -7,7 +7,7 @@
 
 <link rel="stylesheet" href="style.css">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </head>
 
@@ -31,32 +31,99 @@
 
     <hr>
 
-    <h3>残す範囲 (%)</h3>
+    <h3>トリミング範囲 (%)</h3>
+
+    <label>
+        <input
+            type="checkbox"
+            id="linkUpperLower"
+            checked
+        >
+        上下共通設定
+    </label>
+
+    <hr>
+
+    <h4>上ページ</h4>
 
     <div class="grid">
 
         <label>
             左端
-            <input type="number" id="leftPct"
-                   min="0" max="100" value="0">
+            <input type="number"
+                id="upperLeft"
+                min="0"
+                max="100"
+                value="16">
         </label>
 
         <label>
             右端
-            <input type="number" id="rightPct"
-                   min="0" max="100" value="100">
+            <input type="number"
+                id="upperRight"
+                min="0"
+                max="100"
+                value="84">
         </label>
 
         <label>
             上端
-            <input type="number" id="topPct"
-                   min="0" max="100" value="0">
+            <input type="number"
+                id="upperTop"
+                min="0"
+                max="100"
+                value="22">
         </label>
 
         <label>
             下端
-            <input type="number" id="bottomPct"
-                   min="0" max="100" value="100">
+            <input type="number"
+                id="upperBottom"
+                min="0"
+                max="100"
+                value="90">
+        </label>
+
+    </div>
+
+    <h4>下ページ</h4>
+
+    <div class="grid">
+
+        <label>
+            左端
+            <input type="number"
+                id="lowerLeft"
+                min="0"
+                max="100"
+                value="16">
+        </label>
+
+        <label>
+            右端
+            <input type="number"
+                id="lowerRight"
+                min="0"
+                max="100"
+                value="84">
+        </label>
+
+        <label>
+            上端
+            <input type="number"
+                id="lowerTop"
+                min="0"
+                max="100"
+                value="10">
+        </label>
+
+        <label>
+            下端
+            <input type="number"
+                id="lowerBottom"
+                min="0"
+                max="100"
+                value="78">
         </label>
 
     </div>

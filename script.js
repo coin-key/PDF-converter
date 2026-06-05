@@ -1,5 +1,5 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 let pdfDoc = null;
 let pdfBytes = null;
@@ -46,16 +46,44 @@ document
     .getElementById("exportPdf")
     .addEventListener("click", exportPdf);
 
+const previewInputs = [
+    "upperLeft",
+    "upperRight",
+    "upperTop",
+    "upperBottom",
+    "lowerLeft",
+    "lowerRight",
+    "lowerTop",
+    "lowerBottom"
+];
+
+previewInputs.forEach(id => {
+
+    document
+        .getElementById(id)
+        .addEventListener(
+            "input",
+            () => {
+                if(pdfDoc){
+                    renderCurrentPage();
+                }
+            }
+        );
+
+});
+
 async function loadPdf(event) {
 
     const file = event.target.files[0];
 
     if (!file) return;
 
-    pdfBytes = await file.arrayBuffer();
+    const rawBytes = await file.arrayBuffer();
+
+    pdfBytes = new Uint8Array(rawBytes);
 
     pdfDoc = await pdfjsLib.getDocument({
-        data: pdfBytes
+        data: pdfBytes.slice()
     }).promise;
 
     currentPage = 1;
@@ -69,11 +97,73 @@ async function loadPdf(event) {
 function getCropSettings() {
 
     return {
-        left: Number(document.getElementById("leftPct").value),
-        right: Number(document.getElementById("rightPct").value),
-        top: Number(document.getElementById("topPct").value),
-        bottom: Number(document.getElementById("bottomPct").value),
-        split: document.getElementById("splitPages").checked
+
+        split:
+            document.getElementById(
+                "splitPages"
+            ).checked,
+
+        upper: {
+
+            left:
+                Number(
+                    document.getElementById(
+                        "upperLeft"
+                    ).value
+                ),
+
+            right:
+                Number(
+                    document.getElementById(
+                        "upperRight"
+                    ).value
+                ),
+
+            top:
+                Number(
+                    document.getElementById(
+                        "upperTop"
+                    ).value
+                ),
+
+            bottom:
+                Number(
+                    document.getElementById(
+                        "upperBottom"
+                    ).value
+                )
+        },
+
+        lower: {
+
+            left:
+                Number(
+                    document.getElementById(
+                        "lowerLeft"
+                    ).value
+                ),
+
+            right:
+                Number(
+                    document.getElementById(
+                        "lowerRight"
+                    ).value
+                ),
+
+            top:
+                Number(
+                    document.getElementById(
+                        "lowerTop"
+                    ).value
+                ),
+
+            bottom:
+                Number(
+                    document.getElementById(
+                        "lowerBottom"
+                    ).value
+                )
+        }
     };
 }
 
@@ -124,75 +214,130 @@ function drawPreview() {
     const w = previewCanvas.width;
     const h = previewCanvas.height;
 
-    const x1 = w * settings.left / 100;
-    const x2 = w * settings.right / 100;
-
     if (!settings.split) {
 
-        const y1 = h * settings.top / 100;
-        const y2 = h * settings.bottom / 100;
+        const crop = settings.upper;
 
-        drawMask(x1, y1, x2, y2);
+        const x1 = w * crop.left / 100;
+        const x2 = w * crop.right / 100;
+
+        const y1 = h * crop.top / 100;
+        const y2 = h * crop.bottom / 100;
+
+        drawMaskRegion(
+            x1,
+            y1,
+            x2,
+            y2,
+            0,
+            h,
+            "#ff0000"
+        );
 
     } else {
 
         const half = h / 2;
 
-        const y1a =
-            half * settings.top / 100;
+        const upper = settings.upper;
+        const lower = settings.lower;
 
-        const y2a =
-            half * settings.bottom / 100;
+        const upperX1 =
+            w * upper.left / 100;
 
-        drawMask(
-            x1,
-            y1a,
-            x2,
-            y2a
+        const upperX2 =
+            w * upper.right / 100;
+
+        const upperY1 =
+            half * upper.top / 100;
+
+        const upperY2 =
+            half * upper.bottom / 100;
+
+        const lowerX1 =
+            w * lower.left / 100;
+
+        const lowerX2 =
+            w * lower.right / 100;
+
+        const lowerY1 =
+            half * lower.top / 100;
+
+        const lowerY2 =
+            half * lower.bottom / 100;
+
+        drawMaskRegion(
+            upperX1,
+            upperY1,
+            upperX2,
+            upperY2,
+            0,
+            half,
+            "#00aa00"
         );
 
-        drawMask(
-            x1,
-            half + y1a,
-            x2,
-            half + y2a
+        drawMaskRegion(
+            lowerX1,
+            half + lowerY1,
+            lowerX2,
+            half + lowerY2,
+            half,
+            h,
+            "#0066ff"
         );
     }
 }
 
-function drawMask(x1, y1, x2, y2) {
-
-    const w = previewCanvas.width;
-    const h = previewCanvas.height;
+function drawMaskRegion(
+    x1,
+    y1,
+    x2,
+    y2,
+    regionTop,
+    regionBottom,
+    borderColor
+) {
 
     previewCtx.fillStyle =
-        "rgba(255,0,0,0.25)";
+        "rgba(255,0,0,0.15)";
 
-    previewCtx.fillRect(0,0,w,y1);
-    previewCtx.fillRect(0,y2,w,h-y2);
+    previewCtx.fillRect(
+        0,
+        regionTop,
+        previewCanvas.width,
+        y1 - regionTop
+    );
+
+    previewCtx.fillRect(
+        0,
+        y2,
+        previewCanvas.width,
+        regionBottom - y2
+    );
 
     previewCtx.fillRect(
         0,
         y1,
         x1,
-        y2-y1
+        y2 - y1
     );
 
     previewCtx.fillRect(
         x2,
         y1,
-        w-x2,
-        y2-y1
+        previewCanvas.width - x2,
+        y2 - y1
     );
 
-    previewCtx.strokeStyle = "red";
+    previewCtx.strokeStyle =
+        borderColor;
+
     previewCtx.lineWidth = 3;
 
     previewCtx.strokeRect(
         x1,
         y1,
-        x2-x1,
-        y2-y1
+        x2 - x1,
+        y2 - y1
     );
 }
 
@@ -328,33 +473,46 @@ async function addSplitPage(
     upper
 ) {
 
+    const crop =
+    upper
+        ? settings.upper
+        : settings.lower;
+
     const [embedded] =
         await outPdf.embedPages([srcPage]);
 
-    const half =
-        height / 2;
+    const half = height / 2;
 
     const cropX =
-        width * settings.left / 100;
+        width * crop.left / 100;
 
     const cropWidth =
         width *
-        (settings.right - settings.left)
-        / 100;
-
-    const cropY =
-        half *
-        settings.top
+        (crop.right - crop.left)
         / 100;
 
     const cropHeight =
         half *
-        (settings.bottom - settings.top)
+        (crop.bottom - crop.top)
         / 100;
 
-    const srcY = upper
-        ? half + cropY
-        : cropY;
+    let srcY;
+
+    if (upper) {
+
+        srcY =
+            half +
+            half *
+            (100 - crop.bottom)
+            / 100;
+
+    } else {
+
+        srcY =
+            half *
+            (100 - crop.bottom)
+            / 100;
+    }
 
     const page =
         outPdf.addPage([
@@ -369,4 +527,61 @@ async function addSplitPage(
             y: -srcY
         }
     );
+}
+
+const linkedIds = [
+    "Left",
+    "Right",
+    "Top",
+    "Bottom"
+];
+
+for (const name of linkedIds) {
+
+    document
+        .getElementById("upper" + name)
+        .addEventListener(
+            "input",
+            syncUpperToLower
+        );
+}
+
+function syncUpperToLower() {
+
+    const link =
+        document.getElementById(
+            "linkUpperLower"
+        );
+
+    if (!link.checked) {
+        return;
+    }
+
+    document.getElementById(
+        "lowerLeft"
+    ).value =
+    document.getElementById(
+        "upperLeft"
+    ).value;
+
+    document.getElementById(
+        "lowerRight"
+    ).value =
+    document.getElementById(
+        "upperRight"
+    ).value;
+
+    document.getElementById(
+        "lowerTop"
+    ).value =
+    document.getElementById(
+        "upperTop"
+    ).value;
+
+    document.getElementById(
+        "lowerBottom"
+    ).value =
+    document.getElementById(
+        "upperBottom"
+    ).value;
 }
