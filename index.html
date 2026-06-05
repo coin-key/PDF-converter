@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Lecture Trimmer</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+</head>
+
+<body>
+
+<h1>PDF Lecture Trimmer</h1>
+
+<div class="panel">
+
+    <label class="file-select">
+        PDF選択
+        <input type="file" id="pdfInput" accept=".pdf">
+    </label>
+
+    <hr>
+
+    <label>
+        <input type="checkbox" id="splitPages" checked>
+        上下2分割
+    </label>
+
+    <hr>
+
+    <h3>残す範囲 (%)</h3>
+
+    <div class="grid">
+
+        <label>
+            左端
+            <input type="number" id="leftPct"
+                   min="0" max="100" value="0">
+        </label>
+
+        <label>
+            右端
+            <input type="number" id="rightPct"
+                   min="0" max="100" value="100">
+        </label>
+
+        <label>
+            上端
+            <input type="number" id="topPct"
+                   min="0" max="100" value="0">
+        </label>
+
+        <label>
+            下端
+            <input type="number" id="bottomPct"
+                   min="0" max="100" value="100">
+        </label>
+
+    </div>
+
+    <button id="refreshPreview">
+        プレビュー更新
+    </button>
+
+    <button id="exportPdf">
+        PDF生成
+    </button>
+
+</div>
+
+<div class="viewer">
+
+    <div class="preview-panel">
+
+        <h2>元ページ</h2>
+
+        <canvas id="originalCanvas"></canvas>
+
+    </div>
+
+    <div class="preview-panel">
+
+        <h2>変換後</h2>
+
+        <canvas id="previewCanvas"></canvas>
+
+    </div>
+
+</div>
+
+<div class="nav">
+
+    <button id="prevPage">◀</button>
+
+    <span id="pageInfo">
+        ページ 0 / 0
+    </span>
+
+    <button id="nextPage">▶</button>
+
+</div>
+
+<div id="status"></div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

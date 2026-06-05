@@ -1,0 +1,108 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 20px;
+    font-family: sans-serif;
+    background: #f4f4f4;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+.panel {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,.1);
+}
+
+.file-select {
+    display: inline-block;
+    padding: 10px 16px;
+    background: #2196f3;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.file-select input {
+    display: none;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 180px);
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+input[type="number"] {
+    padding: 6px;
+}
+
+button {
+    padding: 10px 14px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.viewer {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.preview-panel {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,.1);
+}
+
+.preview-panel h2 {
+    margin-top: 0;
+}
+
+canvas {
+    border: 1px solid #ccc;
+    max-width: 100%;
+}
+
+.nav {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav button {
+    min-width: 60px;
+}
+
+#pageInfo {
+    font-weight: bold;
+}
+
+#status {
+    margin-top: 20px;
+    padding: 12px;
+    background: white;
+    border-radius: 10px;
+    min-height: 50px;
+    box-shadow: 0 2px 5px rgba(0,0,0,.1);
+    white-space: pre-wrap;
+}
+
+hr {
+    margin: 16px 0;
+}
