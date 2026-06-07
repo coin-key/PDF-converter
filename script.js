@@ -1,5 +1,5 @@
 pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    "./libs/pdf.worker.min.js";
 
 let pdfDoc = null;
 let pdfBytes = null;
@@ -471,7 +471,7 @@ async function exportPdf() {
 
         const blob =
             new Blob(
-                [pdfBytes],
+                [bytes],
                 {
                     type:
                         "application/pdf"
