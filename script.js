@@ -5,6 +5,8 @@ let pdfDoc = null;
 let pdfBytes = null;
 let currentPage = 1;
 let pdfFile = null;
+let notoFontBytes = null;
+let previewPdfUrl = null;
 
 const pdfInput = document.getElementById("pdfInput");
 
@@ -42,6 +44,36 @@ document
             renderCurrentPage();
         }
     });
+
+document.getElementById("openPdfButton")
+    .addEventListener("click", () => {
+
+            console.log(
+                "clicked",
+                previewPdfUrl
+            );
+
+            if (!previewPdfUrl) {
+
+                alert(
+                    "previewPdfUrl is null"
+                );
+
+                return;
+            }
+
+            const w =
+                window.open(
+                    previewPdfUrl,
+                    "_blank"
+                );
+
+            console.log(
+                "window",
+                w
+            );
+        }
+    );
 
 document
     .getElementById("refreshPreview")
@@ -169,6 +201,32 @@ function getCropSettings() {
                     ).value
                 )
         }
+    };
+}
+
+function getTextSettings() {
+
+    return {
+
+        titletext:
+            document.getElementById(
+                "titleText"
+            ).value,
+
+        titleTextPosition:
+            document.getElementById(
+                "titleTextPosition"
+            ).value,
+
+        pageNumberEnabled:
+            document.getElementById(
+                "enablePageNumber"
+            ).checked,
+
+        pageNumberPosition:
+            document.getElementById(
+                "pageNumberPosition"
+            ).value
     };
 }
 
@@ -348,6 +406,14 @@ function drawMaskRegion(
 
 async function exportPdf() {
 
+    document.getElementById("pdfResult")
+        .textContent = "PDF生成中...";
+
+    document.getElementById("openPdfButton")
+        .style.display = "none";
+
+    const textSettings = getTextSettings();
+
     if (!pdfBytes) return;
 
     const settings = getCropSettings();
@@ -370,8 +436,25 @@ async function exportPdf() {
     const srcPdf =
         await PDFLib.PDFDocument.load(pdfBytes);
 
+    if (!notoFontBytes) {
+
+        notoFontBytes =
+            await fetch(
+                "fonts/NotoSansJP/NotoSansJP-Regular.ttf"
+            ).then(
+                r => r.arrayBuffer()
+            );
+    }
+
     const outPdf =
         await PDFLib.PDFDocument.create();
+
+    outPdf.registerFontkit(fontkit);
+
+    const font =
+        await outPdf.embedFont(
+            notoFontBytes
+        );
 
     const pages = srcPdf.getPages();
 
@@ -388,7 +471,10 @@ async function exportPdf() {
                 page,
                 width,
                 height,
-                settings
+                settings,
+                outPdf.getPageCount() + 1,
+                textSettings,
+                font
             );
 
         } else {
@@ -400,8 +486,12 @@ async function exportPdf() {
                 width,
                 height,
                 settings,
+                outPdf.getPageCount() + 1,
+                textSettings,
+                font,
                 true
             );
+
 
             await addSplitPage(
                 srcPdf,
@@ -410,64 +500,16 @@ async function exportPdf() {
                 width,
                 height,
                 settings,
+                outPdf.getPageCount() + 1,
+                textSettings,
+                font,
                 false
             );
         }
+
     }
 
     const bytes = await outPdf.save();
-
-    const suggestedName = pdfFile
-        ? pdfFile.name.replace(
-            /\.pdf$/i,
-            "_trimmed.pdf"
-        )
-        : "output.pdf";
-
-    if (window.showSaveFilePicker) {
-
-        try {
-
-            const handle =
-                await window.showSaveFilePicker({
-
-                    suggestedName,
-
-                    types: [
-                        {
-                            description:
-                                "PDF Document",
-
-                            accept: {
-                                "application/pdf":
-                                    [".pdf"]
-                            }
-                        }
-                    ]
-                });
-
-            const writable =
-                await handle.createWritable();
-
-            await writable.write(
-                bytes
-            );
-
-            await writable.close();
-
-        } catch (err) {
-
-            if (
-                err.name ===
-                "AbortError"
-            ) {
-                return;
-            }
-
-            throw err;
-        }
-
-    } else {
 
         const blob =
             new Blob(
@@ -478,29 +520,27 @@ async function exportPdf() {
                 }
             );
 
-        const url =
+        if (previewPdfUrl) {
+
+            URL.revokeObjectURL(
+                previewPdfUrl
+            );
+        }
+
+        previewPdfUrl =
             URL.createObjectURL(
                 blob
             );
 
-        const a =
-            document.createElement(
-                "a"
-            );
+        document.getElementById(
+            "pdfResult"
+        ).textContent =
+            "PDF生成完了";
 
-        a.href = url;
-
-        a.download =
-            suggestedName;
-
-        a.click();
-
-        URL.revokeObjectURL(
-            url
-        );
-    }
-    statusBox.textContent =
-        "PDF生成完了";
+        document.getElementById(
+            "openPdfButton"
+        ).style.display =
+            "inline-block";
 }
 
 async function addCropPage(
@@ -509,7 +549,10 @@ async function addCropPage(
     srcPage,
     width,
     height,
-    settings
+    settings,
+    pageNumber,
+    textSettings,
+    font
 ) {
 
     const [embedded] =
@@ -533,16 +576,23 @@ async function addCropPage(
         (settings.bottom - settings.top)
         / 100;
 
-    const page =
+    const newPage =
         outPdf.addPage([
             cropWidth,
             cropHeight
         ]);
 
-    page.drawPage(embedded,{
+    newPage.drawPage(embedded,{
         x: -x,
         y: -y
     });
+
+    addPageDecorations(
+        newPage,
+        pageNumber,
+        textSettings,
+        font
+    );
 }
 
 async function addSplitPage(
@@ -552,6 +602,9 @@ async function addSplitPage(
     width,
     height,
     settings,
+    pageNumber,
+    textSettings,
+    font,
     upper
 ) {
 
@@ -596,18 +649,25 @@ async function addSplitPage(
             / 100;
     }
 
-    const page =
+    const newPage =
         outPdf.addPage([
             cropWidth,
             cropHeight
         ]);
 
-    page.drawPage(
+    newPage.drawPage(
         embedded,
         {
             x: -cropX,
             y: -srcY
         }
+    );
+
+    addPageDecorations(
+        newPage,
+        pageNumber,
+        textSettings,
+        font
     );
 }
 
@@ -750,4 +810,130 @@ function validateSettings(settings) {
     }
 
     return errors;
+}
+
+function addPageDecorations(
+    newPage,
+    outputPageNumber,
+    settings,
+    font
+) {
+
+    const width =
+        newPage.getWidth();
+
+    const height =
+        newPage.getHeight();
+
+    const fontSize = 10;
+
+    if (settings.titletext) {
+        
+        const text = settings.titletext;
+
+        const pos =
+            getPosition(
+                width,
+                height,
+                settings.titleTextPosition,
+                font,
+                text,
+                fontSize
+            );
+
+        newPage.drawText(
+            text,
+            {
+                x: pos.x,
+                y: pos.y,
+                size: fontSize,
+                font
+            }
+        );
+    }
+
+    if (
+        settings.pageNumberEnabled
+    ) {
+
+        const text = String(outputPageNumber);
+
+        const pos =
+            getPosition(
+                width,
+                height,
+                settings.pageNumberPosition,
+                font,
+                text,
+                fontSize
+            );
+
+        newPage.drawText(
+            text,
+            {
+                x: pos.x,
+                y: pos.y,
+                size: fontSize,
+                font
+            }
+        );
+    }
+}
+
+function getPosition(
+    width,
+    height,
+    position,
+    font,
+    text,
+    size = 10
+) {
+
+    const margin = 10;
+
+    /*
+    if (isPageNumber) text = String(settings.pageNumberEnabled);
+        else text = settings.commontext;
+    */
+
+    const widthNoText = width - font.widthOfTextAtSize(text, size);
+
+    switch (position) {
+
+        case "top-left":
+            return {
+                x: margin,
+                y: height - size - margin
+            };
+
+        case "top-center":
+            return {
+                x: widthNoText / 2,
+                y: height - size - margin
+            };
+
+        case "top-right":
+            return {
+                x: widthNoText - margin,
+                y: height - size - margin
+            };
+
+        case "bottom-left":
+            return {
+                x: margin,
+                y: margin
+            };
+
+        case "bottom-center":
+            return {
+                x: widthNoText / 2,
+                y: margin
+            };
+
+        case "bottom-right":
+            return {
+                x: widthNoText - margin,
+                y: margin
+            };
+    }
 }

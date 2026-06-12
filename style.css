@@ -35,7 +35,7 @@ h1 {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(2, 180px);
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
     gap: 10px;
     margin-bottom: 15px;
 }
@@ -46,8 +46,24 @@ h1 {
     gap: 5px;
 }
 
+.crop-panels {
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+
+}
+
+.crop-panel {
+
+    flex: 1;
+    min-width: 340px;
+
+}
+
 input[type="number"] {
     padding: 6px;
+    width: 120px;
 }
 
 button {
@@ -111,6 +127,28 @@ canvas {
     white-space: pre-wrap;
 }
 
+#pdfPreview{
+    width:100%;
+    height:80vh;
+}
+
 hr {
     margin: 16px 0;
+}
+
+@media (min-width: 700px) {
+
+    .crop-panel:first-child {
+
+        border-right: 1px solid #ddd;
+        padding-right: 20px;
+
+    }
+
+    .crop-panel:last-child {
+
+        padding-left: 20px;
+
+    }
+
 }
