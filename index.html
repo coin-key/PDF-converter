@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PDF Lecture Trimmer</title>
+<title>PDF整形</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -14,7 +14,7 @@
 
 <body>
 
-<h1>PDF Lecture Trimmer</h1>
+<h1>PDFファイル整形機</h1>
 
 <div class="panel">
 
@@ -143,12 +143,12 @@
     <h3>文字追加</h3>
 
     <label>
-        挿入文
+        タイトル
     </label>
 
     <input
         id="titleText"
-        placeholder="挿入文字なし"
+        placeholder="なし"
     >
 
     <br>
@@ -197,21 +197,21 @@
 
     </select>
 
+    <br><br>
+
     <button id="refreshPreview">
         プレビュー更新
     </button>
 
     <button id="exportPdf">
-        PDF生成
+        PDF出力
     </button>
-
-    <h3>出力PDFプレビュー</h3>
 
     <h3>変換後PDF</h3>
 
     <div id="pdfResult">
 
-        生成待機中
+        出力待機中
 
     </div>
 
@@ -219,7 +219,7 @@
         id="openPdfButton"
         style="display:none;"
     >
-        PDFを新規タブで開く
+        新規タブで開く
     </button>
 
 </div>
@@ -228,7 +228,7 @@
 
     <div class="preview-panel">
 
-        <h2>元ページ</h2>
+        <h2>変換前</h2>
 
         <canvas id="originalCanvas"></canvas>
 

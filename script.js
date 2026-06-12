@@ -407,7 +407,7 @@ function drawMaskRegion(
 async function exportPdf() {
 
     document.getElementById("pdfResult")
-        .textContent = "PDF生成中...";
+        .textContent = "PDF作成中...";
 
     document.getElementById("openPdfButton")
         .style.display = "none";
@@ -431,7 +431,7 @@ async function exportPdf() {
     }
 
     statusBox.textContent =
-        "PDF生成中...";
+        "PDF作成中...";
 
     const srcPdf =
         await PDFLib.PDFDocument.load(pdfBytes);
@@ -535,7 +535,7 @@ async function exportPdf() {
         document.getElementById(
             "pdfResult"
         ).textContent =
-            "PDF生成完了";
+            "PDF出力";
 
         document.getElementById(
             "openPdfButton"
