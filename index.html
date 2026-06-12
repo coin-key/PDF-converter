@@ -9,6 +9,7 @@
 
 <script src="./libs/pdf.min.js"></script>
 <script src="./libs/pdf-lib.min.js"></script>
+<script src="./libs/fontkit.umd.min.js"></script>
 </head>
 
 <body>
@@ -44,91 +45,157 @@
 
     <hr>
 
-    <h4>上ページ</h4>
+    <div class="crop-panels">
 
-    <div class="grid">
+        <div class="crop-panel">
 
-        <label>
-            左端
-            <input type="number"
-                id="upperLeft"
-                min="0"
-                max="100"
-                value="16">
-        </label>
+            <h4>上ページ</h4>
 
-        <label>
-            右端
-            <input type="number"
-                id="upperRight"
-                min="0"
-                max="100"
-                value="84">
-        </label>
+            <div class="grid">
 
-        <label>
-            上端
-            <input type="number"
-                id="upperTop"
-                min="0"
-                max="100"
-                value="22">
-        </label>
+                <label>
+                    左端
+                    <input type="number"
+                        id="upperLeft"
+                        min="0"
+                        max="100"
+                        value="16">
+                </label>
 
-        <label>
-            下端
-            <input type="number"
-                id="upperBottom"
-                min="0"
-                max="100"
-                value="90">
-        </label>
+                <label>
+                    右端
+                    <input type="number"
+                        id="upperRight"
+                        min="0"
+                        max="100"
+                        value="84">
+                </label>
 
-    </div>
+                <label>
+                    上端
+                    <input type="number"
+                        id="upperTop"
+                        min="0"
+                        max="100"
+                        value="22">
+                </label>
 
-    <div id="lowerSettings">
-        <h4>下ページ</h4>
+                <label>
+                    下端
+                    <input type="number"
+                        id="upperBottom"
+                        min="0"
+                        max="100"
+                        value="90">
+                </label>
+            </div>
+        </div>
 
-        <div class="grid">
+        <div
+            id="lowerSettings"
+            class="crop-panel"
+        >
+            <h4>下ページ</h4>
 
-            <label>
-                左端
-                <input type="number"
-                    id="lowerLeft"
-                    min="0"
-                    max="100"
-                    value="16">
-            </label>
+            <div class="grid">
 
-            <label>
-                右端
-                <input type="number"
-                    id="lowerRight"
-                    min="0"
-                    max="100"
-                    value="84">
-            </label>
+                <label>
+                    左端
+                    <input type="number"
+                        id="lowerLeft"
+                        min="0"
+                        max="100"
+                        value="16">
+                </label>
 
-            <label>
-                上端
-                <input type="number"
-                    id="lowerTop"
-                    min="0"
-                    max="100"
-                    value="10">
-            </label>
+                <label>
+                    右端
+                    <input type="number"
+                        id="lowerRight"
+                        min="0"
+                        max="100"
+                        value="84">
+                </label>
 
-            <label>
-                下端
-                <input type="number"
-                    id="lowerBottom"
-                    min="0"
-                    max="100"
-                    value="78">
-            </label>
+                <label>
+                    上端
+                    <input type="number"
+                        id="lowerTop"
+                        min="0"
+                        max="100"
+                        value="10">
+                </label>
 
+                <label>
+                    下端
+                    <input type="number"
+                        id="lowerBottom"
+                        min="0"
+                        max="100"
+                        value="78">
+                </label>
+            </div>
         </div>
     </div>
+
+    <br><br>
+
+    <h3>文字追加</h3>
+
+    <label>
+        挿入文
+    </label>
+
+    <input
+        id="titleText"
+        placeholder="挿入文字なし"
+    >
+
+    <br>
+
+    <label>
+        タイトル位置
+    </label>
+
+    <select id="titleTextPosition">
+
+        <option value="bottom-left">下左</option>
+        <option value="bottom-center">下中央</option>
+        <option value="bottom-right">下右</option>
+
+        <option value="top-left">上左</option>
+        <option value="top-center">上中央</option>
+        <option value="top-right">上右</option>
+
+    </select>
+
+    <br><br>
+
+    <label>
+        <input
+            type="checkbox"
+            id="enablePageNumber"
+        >
+        ページ番号
+    </label>
+
+    <br>
+
+    <label>
+        ページ番号位置
+    </label>
+
+    <select id="pageNumberPosition">
+
+        <option value="bottom-right">下右</option>
+        <option value="bottom-left">下左</option>
+        <option value="bottom-center">下中央</option>
+
+        <option value="top-left">上左</option>
+        <option value="top-center">上中央</option>
+        <option value="top-right">上右</option>
+
+    </select>
 
     <button id="refreshPreview">
         プレビュー更新
@@ -136,6 +203,23 @@
 
     <button id="exportPdf">
         PDF生成
+    </button>
+
+    <h3>出力PDFプレビュー</h3>
+
+    <h3>変換後PDF</h3>
+
+    <div id="pdfResult">
+
+        生成待機中
+
+    </div>
+
+    <button
+        id="openPdfButton"
+        style="display:none;"
+    >
+        PDFを新規タブで開く
     </button>
 
 </div>
