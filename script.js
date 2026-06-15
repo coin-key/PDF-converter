@@ -208,7 +208,7 @@ function getTextSettings() {
 
     return {
 
-        titletext:
+        titleText:
             document.getElementById(
                 "titleText"
             ).value,
@@ -256,6 +256,12 @@ async function renderCurrentPage() {
 
 function drawPreview() {
 
+    let upperX1, upperY1, upperX2, upperY2;
+    let lowerX1, lowerY1, lowerX2, lowerY2;
+    let half;
+
+    let x1, y1, x2, y2;
+
     const settings = getCropSettings();
 
     previewCanvas.width = originalCanvas.width;
@@ -281,11 +287,11 @@ function drawPreview() {
 
         const crop = settings.upper;
 
-        const x1 = w * crop.left / 100;
-        const x2 = w * crop.right / 100;
+        x1 = w * crop.left / 100;
+        x2 = w * crop.right / 100;
 
-        const y1 = h * crop.top / 100;
-        const y2 = h * crop.bottom / 100;
+        y1 = h * crop.top / 100;
+        y2 = h * crop.bottom / 100;
 
         drawMaskRegion(
             x1,
@@ -294,38 +300,37 @@ function drawPreview() {
             y2,
             0,
             h,
-            "#ff0000"
         );
 
     } else {
 
-        const half = h / 2;
+        half = h / 2;
 
         const upper = settings.upper;
         const lower = settings.lower;
 
-        const upperX1 =
+        upperX1 =
             w * upper.left / 100;
 
-        const upperX2 =
+        upperX2 =
             w * upper.right / 100;
 
-        const upperY1 =
+        upperY1 =
             half * upper.top / 100;
 
-        const upperY2 =
+        upperY2 =
             half * upper.bottom / 100;
 
-        const lowerX1 =
+        lowerX1 =
             w * lower.left / 100;
 
-        const lowerX2 =
+        lowerX2 =
             w * lower.right / 100;
 
-        const lowerY1 =
+        lowerY1 =
             half * lower.top / 100;
 
-        const lowerY2 =
+        lowerY2 =
             half * lower.bottom / 100;
 
         drawMaskRegion(
@@ -335,7 +340,6 @@ function drawPreview() {
             upperY2,
             0,
             half,
-            "#00aa00"
         );
 
         drawMaskRegion(
@@ -345,9 +349,226 @@ function drawPreview() {
             half + lowerY2,
             half,
             h,
-            "#0066ff"
         );
     }
+
+    drawTextPreview(
+        settings,
+        w,
+        h,
+
+        settings.split
+            ? {
+                upperX1,
+                upperY1,
+                upperX2,
+                upperY2,
+
+                lowerX1,
+                lowerY1,
+                lowerX2,
+                lowerY2,
+
+                half
+            }
+            : {
+                x1,
+                y1,
+                x2,
+                y2
+            }
+    );
+}
+
+function drawTextPreview(
+    settings,
+    w,
+    h,
+    cropInfo
+) {
+
+    const textSettings =
+        getTextSettings();
+
+    if (
+        !textSettings.titleText &&
+        !textSettings.pageNumberEnabled
+    ) {
+        return;
+    }
+
+    if (textSettings.titleText) {
+
+        if (!settings.split) {
+
+            drawTextArea(
+                cropInfo.x1,
+                cropInfo.y1,
+                cropInfo.x2,
+                cropInfo.y2,
+                textSettings.titleTextPosition,
+                "rgba(255,255,0,0.25)"
+            );
+
+        } else {
+
+            drawTextArea(
+                cropInfo.upperX1,
+                cropInfo.upperY1,
+                cropInfo.upperX2,
+                cropInfo.upperY2,
+                textSettings.titleTextPosition,
+                "rgba(255,255,0,0.25)"
+            );
+
+            drawTextArea(
+                cropInfo.lowerX1,
+                cropInfo.half + cropInfo.lowerY1,
+                cropInfo.lowerX2,
+                cropInfo.half + cropInfo.lowerY2,
+                textSettings.titleTextPosition,
+                "rgba(255,255,0,0.25)"
+            );
+
+        }
+    }
+
+    if (textSettings.pageNumberEnabled) {
+
+        if (!settings.split) {
+
+            drawTextArea(
+                cropInfo.x1,
+                cropInfo.y1,
+                cropInfo.x2,
+                cropInfo.y2,
+                textSettings.pageNumberPosition,
+                "rgba(0,0,255,0.25)"
+            );
+
+        } else {
+
+            drawTextArea(
+                cropInfo.upperX1,
+                cropInfo.upperY1,
+                cropInfo.upperX2,
+                cropInfo.upperY2,
+                textSettings.pageNumberPosition,
+                "rgba(0,0,255,0.25)"
+            );
+
+            drawTextArea(
+                cropInfo.lowerX1,
+                cropInfo.half + cropInfo.lowerY1,
+            cropInfo.lowerX2,
+            cropInfo.half + cropInfo.lowerY2,
+            textSettings.pageNumberPosition,
+            "rgba(0,0,255,0.25)"
+        );
+
+    }
+}
+
+}
+
+function drawTextArea(
+    x1,
+    y1,
+    x2,
+    y2,
+    position,
+    color
+) {
+
+    const areaWidth =
+        x2 - x1;
+
+    const areaHeight =
+        y2 - y1;
+
+    const boxWidth = 80;
+    const boxHeight = 20;
+
+    let x;
+    let y;
+
+    switch(position) {
+
+        case "top-left":
+
+            x = x1 + 10;
+            y = y1 + 10;
+            break;
+
+        case "top-center":
+
+            x =
+                x1 +
+                (areaWidth - boxWidth)
+                / 2;
+
+            y = y1 + 10;
+            break;
+
+        case "top-right":
+
+            x =
+                x2 -
+                boxWidth -
+                10;
+
+            y = y1 + 10;
+            break;
+
+        case "bottom-left":
+
+            x = x1 + 10;
+
+            y =
+                y2 -
+                boxHeight -
+                10;
+
+            break;
+
+        case "bottom-center":
+
+            x =
+                x1 +
+                (areaWidth - boxWidth)
+                / 2;
+
+            y =
+                y2 -
+                boxHeight -
+                10;
+
+            break;
+
+        case "bottom-right":
+
+            x =
+                x2 -
+                boxWidth -
+                10;
+
+            y =
+                y2 -
+                boxHeight -
+                10;
+
+            break;
+    }
+
+    previewCtx.fillStyle =
+        color;
+
+    previewCtx.fillRect(
+        x,
+        y,
+        boxWidth,
+        boxHeight
+    );
 }
 
 function drawMaskRegion(
@@ -357,7 +578,6 @@ function drawMaskRegion(
     y2,
     regionTop,
     regionBottom,
-    borderColor
 ) {
 
     previewCtx.fillStyle =
@@ -388,18 +608,6 @@ function drawMaskRegion(
         x2,
         y1,
         previewCanvas.width - x2,
-        y2 - y1
-    );
-
-    previewCtx.strokeStyle =
-        borderColor;
-
-    previewCtx.lineWidth = 3;
-
-    previewCtx.strokeRect(
-        x1,
-        y1,
-        x2 - x1,
         y2 - y1
     );
 }
@@ -555,25 +763,27 @@ async function addCropPage(
     font
 ) {
 
+    const crop = settings.upper;
+
     const [embedded] =
         await outPdf.embedPages([srcPage]);
 
     const x =
-        width * settings.left / 100;
+        width * crop.left / 100;
 
     const cropWidth =
         width *
-        (settings.right - settings.left)
+        (crop.right - crop.left)
         / 100;
 
     const y =
         height *
-        settings.top
+        (100 - crop.bottom)
         / 100;
 
     const cropHeight =
         height *
-        (settings.bottom - settings.top)
+        (crop.bottom - crop.top)
         / 100;
 
     const newPage =
@@ -728,21 +938,6 @@ function syncUpperToLower() {
     ).value;
 }
 
-function updateUI() {
-
-    const split =
-        document.getElementById(
-            "splitPages"
-        ).checked;
-
-    document.getElementById(
-        "lowerSettings"
-    ).style.display =
-        split ? "block" : "none";
-}
-
-updateUI();
-
 function validateSettings(settings) {
 
     const errors = [];
@@ -827,9 +1022,9 @@ function addPageDecorations(
 
     const fontSize = 10;
 
-    if (settings.titletext) {
+    if (settings.titleText) {
         
-        const text = settings.titletext;
+        const text = settings.titleText;
 
         const pos =
             getPosition(
@@ -891,11 +1086,6 @@ function getPosition(
 
     const margin = 10;
 
-    /*
-    if (isPageNumber) text = String(settings.pageNumberEnabled);
-        else text = settings.commontext;
-    */
-
     const widthNoText = width - font.widthOfTextAtSize(text, size);
 
     switch (position) {
@@ -937,3 +1127,18 @@ function getPosition(
             };
     }
 }
+
+function updateUI() {
+
+    const split =
+        document.getElementById(
+            "splitPages"
+        ).checked;
+
+    document.getElementById(
+        "lowerSettings"
+    ).style.display =
+        split ? "block" : "none";
+}
+
+updateUI();
